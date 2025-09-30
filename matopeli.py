@@ -1,4 +1,6 @@
 # 'pip install PySide6' tarvitaan 
+# kommentoidaan pikkasen
+
 import sys
 import random
 from PySide6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QMenu
