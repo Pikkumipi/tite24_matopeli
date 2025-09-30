@@ -11,7 +11,7 @@ from PySide6.QtCore import Qt, QTimer
 CELL_SIZE = 20
 GRID_WIDTH = 20
 GRID_HEIGHT = 15
-
+#Nii mäki
 class SnakeGame(QGraphicsView):
     def __init__(self):
         super().__init__()
