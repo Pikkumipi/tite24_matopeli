@@ -24,14 +24,25 @@ class SnakeGame(QGraphicsView):
         
                # pelin aloitus nappi
         self.game_started = False
+        self.game_over = False  # peli päättynyt, voi aloittaa uudelleen
         self.init_screen()
 
 
     def keyPressEvent(self, event):
         key = event.key()
             # pelin aloitusnappi
+        
+        # Käynnistä uusi peli Game Overin jälkeen (mutta ei nuolinäppäimillä)
+        if self.game_over and key not in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
+            self.start_game()
+            self.game_over = False
+            self.game_started = True
+            self.scene().clear()
+            return
+        
+            # Ensimmäinen pelin käynnistys
         if not self.game_started:
-            if key == event.key():
+            if key not in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
                 self.game_started = True
                 self.scene().clear()
                 self.start_game()
@@ -63,13 +74,18 @@ class SnakeGame(QGraphicsView):
         #Pelialueen rajat
         if new_head in self.snake or not (0 <= new_head[0] < GRID_WIDTH) or not (0 <= new_head[1] < GRID_HEIGHT):
             self.timer.stop()
+            self.game_over = True  # merkitään peli päättyneeksi
             self.scene().clear()
 
             #Game over text
             game_over_text = self.scene().addText("Game Over", QFont("Arial", 24))
-            text_width = game_over_text.boundingRect().width()
-            text_x = (self.width() - text_width) / 2
-            game_over_text.setPos(text_x, GRID_HEIGHT * CELL_SIZE / 2)
+            restart_text = self.scene().addText("Press any key to start new game", QFont("Arial", 16)) #restart text
+            #Asetetaan Game Over tekstin sijainti näkymän keskelle
+            game_over_text.setPos((self.width() - game_over_text.boundingRect().width()) / 2,
+                        GRID_HEIGHT * CELL_SIZE / 2 - 30)
+            #Asetetaan restart tekstin sijainti keskelle
+            restart_text.setPos((self.width() - restart_text.boundingRect().width()) / 2,
+                        GRID_HEIGHT * CELL_SIZE / 2 + 10)
             return
 
         self.snake.insert(0, new_head)
