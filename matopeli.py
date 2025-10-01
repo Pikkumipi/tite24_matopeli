@@ -83,6 +83,14 @@ class SnakeGame(QGraphicsView):
         self.food = self.spawn_food()
         self.timer.start(300)
         self.score = 0
+        self.level_limit = 5
+        self.timer_delay = 300
+
+        self.timer.start(self.timer_delay)   #nopeuden kasvatus#
+        if self.score == self.level_limit:
+            self.level_limit += 5
+            self.timer_delay *= 0.9
+            self.timer.setInterval(self.timer_delay)
 
     #ruuan lisääminen
     def spawn_food(self):
