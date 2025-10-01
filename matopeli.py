@@ -1,18 +1,16 @@
 # 'pip install PySide6' tarvitaan 
 # kommentoidaan pikkasen
-#SEKOAN KOHTA
+
 import sys
 import random
 from PySide6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QMenu
 from PySide6.QtGui import QPainter, QPen, QBrush, QFont
 from PySide6.QtCore import Qt, QTimer
-#testi2
-# vakiot 88888
-#pssssst
+
 CELL_SIZE = 20
 GRID_WIDTH = 20
 GRID_HEIGHT = 15
-#Nii mäki
+
 class SnakeGame(QGraphicsView):
     def __init__(self):
         super().__init__()
