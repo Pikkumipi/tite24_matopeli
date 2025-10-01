@@ -7,7 +7,8 @@ from PySide6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QMenu
 from PySide6.QtGui import QPainter, QPen, QBrush, QFont
 from PySide6.QtCore import Qt, QTimer
 #testi2
-# vakiot
+# vakiot 88888
+#pssssst
 CELL_SIZE = 20
 GRID_WIDTH = 20
 GRID_HEIGHT = 15
@@ -61,6 +62,7 @@ class SnakeGame(QGraphicsView):
 
     def print_game(self):
         self.scene().clear()
+        self.scene().addText(f"Score: {self.score}", QFont("Arial", 12))
 
         for segment in self.snake:
             x, y = segment
@@ -77,6 +79,7 @@ class SnakeGame(QGraphicsView):
         self.snake = [(5, 5), (5, 6), (5, 7)]
         self.food = self.spawn_food()
         self.timer.start(300)
+        self.score = 0
 
     #ruuan lisääminen
     def spawn_food(self):
