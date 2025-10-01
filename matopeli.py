@@ -56,10 +56,10 @@ class SnakeGame(QGraphicsView):
 
         self.snake.insert(0, new_head)
         if new_head == self.food:
-            self.food = self.spawn_food()   # uusi ruoka
+            self.score += 1 #kasvatetaan madon pituutta
+            self.food = self.spawn_food() # uusi ruoka
         else:
-            self.snake.pop()  # ei kasva jos ei syö
-        
+            self.snake.pop() # ei kasva jos ei syö
 
         self.print_game()
 
