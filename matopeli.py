@@ -26,6 +26,14 @@ class SnakeGame(QGraphicsView):
         self.game_over = False  # peli päättynyt, voi aloittaa uudelleen
         self.init_screen()
 
+        self.eat_sound = QSoundEffect()
+        self.eat_sound.setSource(QUrl.fromLocalFile("rouskis.wav"))
+        self.eat_sound.setVolume(1.0)
+
+        self.gameover_sound = QSoundEffect()
+        self.gameover_sound.setSource(QUrl.fromLocalFile("gameover.wav"))
+        self.gameover_sound.setVolume(1.0)
+
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -96,6 +104,7 @@ class SnakeGame(QGraphicsView):
         if new_head == self.food:
             self.score += 1 #kasvatetaan madon pituutta
             self.food = self.spawn_food() # uusi ruoka
+            self.eat_sound.play()
         else:
             self.snake.pop()
 
