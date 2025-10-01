@@ -51,8 +51,11 @@ class SnakeGame(QGraphicsView):
             new_head = (head_x, head_y + 1)
 
         self.snake.insert(0, new_head)
+        if new_head == self.food:
+            self.food = self.spawn_food()   # uusi ruoka
+        else:
+            self.snake.pop()  # ei kasva jos ei syö
         
-        self.snake.pop()
 
         self.print_game()
 
@@ -62,11 +65,26 @@ class SnakeGame(QGraphicsView):
         for segment in self.snake:
             x, y = segment
             self.scene().addRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, QPen(Qt.black), QBrush(Qt.black))
-        
+                # piirretään ruoka
+        fx, fy = self.food
+        self.scene().addEllipse(
+            fx * CELL_SIZE, fy * CELL_SIZE, CELL_SIZE, CELL_SIZE,
+            QPen(Qt.red), QBrush(Qt.red)
+        )
+
     def start_game(self):
         self.direction = Qt.Key_Right
         self.snake = [(5, 5), (5, 6), (5, 7)]
+        self.food = self.spawn_food()
         self.timer.start(300)
+
+    #ruuan lisääminen
+    def spawn_food(self):
+        while True:
+            x = random.randint(0, GRID_WIDTH - 1)
+            y = random.randint(0, GRID_HEIGHT - 1)
+            if (x, y) not in self.snake:
+                return x, y
 
 def main():
     app = QApplication(sys.argv)
