@@ -22,10 +22,21 @@ class SnakeGame(QGraphicsView):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_game)
         
-        self.start_game()
+               # pelin aloitus nappi
+        self.game_started = False
+        self.init_screen()
+
 
     def keyPressEvent(self, event):
         key = event.key()
+            # pelin aloitusnappi
+        if not self.game_started:
+            if key == event.key():
+                self.game_started = True
+                self.scene().clear()
+                self.start_game()
+                return
+
         if key in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
             # päivitetään suunta vain jos se ei ole vastakkainen valitulle suunnalle
             if key == Qt.Key_Left and self.direction != Qt.Key_Right:
@@ -70,12 +81,21 @@ class SnakeGame(QGraphicsView):
         for segment in self.snake:
             x, y = segment
             self.scene().addRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, QPen(Qt.black), QBrush(Qt.black))
-                # piirretään ruoka
+        # piirretään ruoka
         fx, fy = self.food
         self.scene().addEllipse(
             fx * CELL_SIZE, fy * CELL_SIZE, CELL_SIZE, CELL_SIZE,
             QPen(Qt.red), QBrush(Qt.red)
         )
+        # lisätty metodi pelin aloitusnäyttö
+    def init_screen(self):
+        start_text = self.scene().addText("Press any key to start", QFont("Arial", 18))
+        text_width = start_text.boundingRect().width()
+        text_x = (self.width() - text_width) / 5
+        start_text.setPos(text_x, GRID_HEIGHT * CELL_SIZE / 2)
+                
+       
+
 
     def start_game(self):
         self.direction = Qt.Key_Right
