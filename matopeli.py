@@ -67,10 +67,10 @@ class SnakeGame(QGraphicsView):
 
         self.snake.insert(0, new_head)
         if new_head == self.food:
-            self.food = self.spawn_food()   # uusi ruoka
+            self.score += 1 #kasvatetaan madon pituutta
+            self.food = self.spawn_food() # uusi ruoka
         else:
-            self.snake.pop()  # ei kasva jos ei syö
-        
+            self.snake.pop() # ei kasva jos ei syö
 
         self.print_game()
 
@@ -103,6 +103,14 @@ class SnakeGame(QGraphicsView):
         self.food = self.spawn_food()
         self.timer.start(300)
         self.score = 0
+        self.level_limit = 5
+        self.timer_delay = 300
+
+        self.timer.start(self.timer_delay)   #nopeuden kasvatus#
+        if self.score == self.level_limit:
+            self.level_limit += 5
+            self.timer_delay *= 0.9
+            self.timer.setInterval(self.timer_delay)
 
     #ruuan lisääminen
     def spawn_food(self):
