@@ -1,9 +1,8 @@
-# 'pip install PySide6' tarvitaan 
-# kommentoidaan pikkasen
+# pip install PySide6
 
 import sys
 import random
-from PySide6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QMenu
+from PySide6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene
 from PySide6.QtGui import QPainter, QPen, QBrush, QFont
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtMultimedia import QSoundEffect
@@ -22,31 +21,35 @@ class SnakeGame(QGraphicsView):
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_game)
-        
-               # pelin aloitus nappi
+
         self.game_started = False
+        self.game_over = False  # peli päättynyt, voi aloittaa uudelleen
         self.init_screen()
-        #syönti ääni
-        self.eat_sound = QSoundEffect()
-        self.eat_sound.setSource(QUrl.fromLocalFile("rouskis.wav"))
-        self.eat_sound.setVolume(1.0)
-        #gameover ääni
-        self.gameover_sound = QSoundEffect()
-        self.gameover_sound.setSource(QUrl.fromLocalFile("gameover.wav"))
-        self.gameover_sound.setVolume(1.0)
+
 
     def keyPressEvent(self, event):
         key = event.key()
-            # pelin aloitusnappi
+
+        # Aloitetaan peli jos ei vielä käynnissä
+        
+        # Käynnistä uusi peli Game Overin jälkeen (mutta ei nuolinäppäimillä)
+        if self.game_over and key not in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
+            self.start_game()
+            self.game_over = False
+            self.game_started = True
+            self.scene().clear()
+            return
+        
+            # Ensimmäinen pelin käynnistys
         if not self.game_started:
-            if key == event.key():
+            if key not in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
                 self.game_started = True
                 self.scene().clear()
                 self.start_game()
                 return
 
+        # Suunnan vaihto
         if key in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
-            # päivitetään suunta vain jos se ei ole vastakkainen valitulle suunnalle
             if key == Qt.Key_Left and self.direction != Qt.Key_Right:
                 self.direction = key
             elif key == Qt.Key_Right and self.direction != Qt.Key_Left:
@@ -67,10 +70,11 @@ class SnakeGame(QGraphicsView):
             new_head = (head_x, head_y - 1)
         elif self.direction == Qt.Key_Down:
             new_head = (head_x, head_y + 1)
-        
-        #Pelialueen rajat
+
+        # Tarkistetaan rajat ja osuma itseensä
         if new_head in self.snake or not (0 <= new_head[0] < GRID_WIDTH) or not (0 <= new_head[1] < GRID_HEIGHT):
             self.timer.stop()
+            self.game_over = True  # merkitään peli päättyneeksi
             self.scene().clear()
 
             # SOITA GAME OVER ÄÄNI
@@ -78,61 +82,70 @@ class SnakeGame(QGraphicsView):
 
             #Game over text
             game_over_text = self.scene().addText("Game Over", QFont("Arial", 24))
-            text_width = game_over_text.boundingRect().width()
-            text_x = (self.width() - text_width) / 2
-            game_over_text.setPos(text_x, GRID_HEIGHT * CELL_SIZE / 2)
+            restart_text = self.scene().addText("Press any key to start new game", QFont("Arial", 16)) #restart text
+            #Asetetaan Game Over tekstin sijainti näkymän keskelle
+            game_over_text.setPos((self.width() - game_over_text.boundingRect().width()) / 2,
+                        GRID_HEIGHT * CELL_SIZE / 2 - 30)
+            #Asetetaan restart tekstin sijainti keskelle
+            restart_text.setPos((self.width() - restart_text.boundingRect().width()) / 2,
+                        GRID_HEIGHT * CELL_SIZE / 2 + 10)
             return
 
         self.snake.insert(0, new_head)
+
         if new_head == self.food:
             self.score += 1 #kasvatetaan madon pituutta
             self.food = self.spawn_food() # uusi ruoka
-            #soita syömisääni
-            self.eat_sound.play()
         else:
-            self.snake.pop() # ei kasva jos ei syö
+            self.snake.pop()
+
+        # Nopeuden kasvatus
+        if self.score == self.level_limit:
+            self.level_limit += 5
+            self.timer_delay = max(50, int(self.timer_delay * 0.9))
+            self.timer.setInterval(self.timer_delay)
 
         self.print_game()
 
     def print_game(self):
         self.scene().clear()
-        self.scene().addText(f"Score: {self.score}", QFont("Arial", 12))
+        self.scene().addText(f"Score: {self.score}", QFont("Arial", 12)).setPos(5, 0)
 
-        for segment in self.snake:
-            x, y = segment
-            self.scene().addRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, QPen(Qt.black), QBrush(Qt.black))
-        # piirretään ruoka
+        # Käärmeen segmentit
+        for i, (x, y) in enumerate(self.snake):
+            color = Qt.darkGreen if i == 0 else Qt.green
+            self.scene().addRect(
+                x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE,
+                QPen(Qt.black), QBrush(color)
+            )
+
+        # Ruoka "omena"
         fx, fy = self.food
         self.scene().addEllipse(
-            fx * CELL_SIZE, fy * CELL_SIZE, CELL_SIZE, CELL_SIZE,
+            fx * CELL_SIZE + 4, fy * CELL_SIZE + 4,
+            CELL_SIZE - 8, CELL_SIZE - 8,
             QPen(Qt.red), QBrush(Qt.red)
         )
-        # lisätty metodi pelin aloitusnäyttö
+        self.scene().addRect(
+            fx * CELL_SIZE + (CELL_SIZE//2 - 2), fy * CELL_SIZE,
+            4, CELL_SIZE//4,
+            QPen(Qt.green), QBrush(Qt.green)
+        )
+
     def init_screen(self):
         start_text = self.scene().addText("Press any key to start", QFont("Arial", 18))
         text_width = start_text.boundingRect().width()
-        text_x = (self.width() - text_width) / 5
-        start_text.setPos(text_x, GRID_HEIGHT * CELL_SIZE / 2)
-                
-       
-
+        start_text.setPos((CELL_SIZE * GRID_WIDTH - text_width) / 2, GRID_HEIGHT * CELL_SIZE / 2)
 
     def start_game(self):
         self.direction = Qt.Key_Right
         self.snake = [(5, 5), (5, 6), (5, 7)]
         self.food = self.spawn_food()
-        self.timer.start(300)
         self.score = 0
         self.level_limit = 5
         self.timer_delay = 300
+        self.timer.start(self.timer_delay)
 
-        self.timer.start(self.timer_delay)   #nopeuden kasvatus#
-        if self.score == self.level_limit:
-            self.level_limit += 5
-            self.timer_delay *= 0.9
-            self.timer.setInterval(self.timer_delay)
-
-    #ruuan lisääminen
     def spawn_food(self):
         while True:
             x = random.randint(0, GRID_WIDTH - 1)
